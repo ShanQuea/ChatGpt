@@ -1,8 +1,9 @@
 import os
 import sqlite3
+import openai
 
 from flask import Flask, render_template, request, jsonify, session
-import openai
+
 
 
 app = Flask(__name__)
@@ -57,15 +58,20 @@ def index():
     return render_template("index.html", username=session["username"])
 
 # 注册路由
-@app.route("/register", methods=["POST"])
+@app.route("/register", methods=["GET", "POST"])
 def register():
-    username = request.form["username"]
-    password = request.form["password"]
-    # 在这里可以添加验证用户名和密码的逻辑，例如检查用户名是否已存在等
-    # 如果验证成功，将用户名保存到 session 中，并将账号信息存入数据库
-    session["username"] = username
-    register_account(username, password)
-    return jsonify({"result": "success", "username": username})
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        # 在这里可以添加验证用户名和密码的逻辑，例如检查用户名是否已存在等
+        # 如果验证成功，将用户名保存到 session 中，并将账号信息存入数据库
+        session["username"] = username
+        register_account(username, password)
+        return jsonify({"result": "success", "username": username})
+    else:
+        # 如果是 GET 方法请求，则渲染注册页面
+        return render_template("register.html")
+
 
 # 登录路由
 @app.route("/login", methods=["POST"])
