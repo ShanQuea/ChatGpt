@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <form id="login-form">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <input type="submit" value="Login">
+    </form>
+    <script>
+        // 使用 JavaScript 提交登录表单
+        document.getElementById("login-form").addEventListener("submit", function(event) {
+            event.preventDefault();  // 阻止表单默认提交行为
+
+            // 获取表单中的用户名和密码
+            var username = document.getElementById("username").value;
+            var password = document.getElementById("password").value;
+
+            // 使用 AJAX 发送登录请求
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/login", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.result === "success") {
+                            // 登录成功，重载页面
+                            location.reload();
+                        } else {
+                            // 登录失败，显示错误消息
+                            alert("Login failed. Please check your username and password.");
+                        }
+                    } else {
+                        // 请求失败，显示错误消息
+                        alert("Login failed. Please check your username and password.");
+                    }
+                }
+            };
+            xhr.send("username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password));
+        });
+    </script>
+</body>
+</html>
