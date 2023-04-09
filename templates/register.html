@@ -1,10 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <title>注册</title>
 </head>
 <body>
-$END$
+    <h1>注册</h1>
+    <form action="/register" method="post">
+        <label for="username">用户名:</label>
+        <input type="text" id="username" name="username" required>
+        <br>
+        <label for="password">密码:</label>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <label for="confirm_password">确认密码:</label>
+        <input type="password" id="confirm_password" name="confirm_password" required>
+        <br>
+        <input type="submit" value="注册">
+    </form>
 </body>
 </html>
