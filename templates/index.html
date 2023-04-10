@@ -8,31 +8,31 @@
         var waitingForBotResponse = false;
 
         function requestChat(userMessage) {
-            if (waitingForBotResponse) {
-                return;
-            }
+        if (waitingForBotResponse) {
+            return;
+        }
 
-            waitingForBotResponse = true;
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        var response = JSON.parse(xhr.responseText);
-                        var botMessage = response.message;
-                        appendMessage("bot", botMessage);
-                        scrollToBottom();
-                        waitingForBotResponse = false;
-                        document.getElementById("sendMessageBtn").disabled = false; // 收到Bot的响应后启用发送按钮
-                    } else {
-                        console.error("请求ChatGPT失败:" + xhr.statusText);
-                        waitingForBotResponse = false;
-                        document.getElementById("sendMessageBtn").disabled = false; // 请求失败后启用发送按钮
-                    }
+        waitingForBotResponse = true;
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    var botMessage = response.message;
+                    appendMessage("bot", botMessage);
+                    scrollToBottom();
+                    waitingForBotResponse = false;
+                    document.getElementById("sendMessageBtn").disabled = false; // 收到Bot的响应后启用发送按钮
+                } else {
+                    console.error("请求ChatGPT失败:" + xhr.statusText);
+                    waitingForBotResponse = false;
+                    document.getElementById("sendMessageBtn").disabled = false; // 请求失败后启用发送按钮
                 }
-            };
-            xhr.open("POST", "/chat", true);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-            xhr.send("user_message=" + encodeURIComponent(userMessage));
+            }
+        };
+        xhr.open("POST", "/chat", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+        xhr.send("user_message=" + encodeURIComponent(userMessage));
         }
 
         function appendMessage(sender, message) {
@@ -50,15 +50,34 @@
         }
 
         function sendMessage() {
-            var userMessage = document.getElementById("userMessage").value;
-            if (userMessage) {
-                appendMessage("user", userMessage);
-                requestChat(userMessage);
-                document.getElementById("userMessage").value = "";
-                document.getElementById("sendMessageBtn").disabled = true; // 禁用发送按钮
-                scrollToBottom();
-            }
+        var userMessage = document.getElementById("userMessage").value;
+        if (userMessage) {
+            appendMessage("user", userMessage);
+            requestChat(userMessage);
+            document.getElementById("userMessage").value = "";
+            document.getElementById("sendMessageBtn").disabled = true; // 禁用发送按钮
+            scrollToBottom();
         }
+    }
+
+        // 处理 bot 的回复
+        chatlog.addEventListener("DOMNodeInserted", function(event) {
+            var botMessage = event.target;
+            if (botMessage.classList && botMessage.classList.contains("bot")) {
+                if (!waitingForBotResponse) {
+                    // 如果不是等待 bot 响应时插入的消息，则滚动到底部
+                    scrollToBottom();
+                } else {
+                    // 如果正在等待 bot 响应，则移除自动生成的问题和答案
+                    var previousSibling = botMessage.previousSibling;
+                    if (previousSibling && previousSibling.classList && previousSibling.classList.contains("user")) {
+                        // 删除前一个 user 消息
+                        previousSibling.remove();
+                    }
+                    botMessage.remove();
+                }
+            }
+        });
 
         document.getElementById("userMessage").addEventListener("keydown", function(event) {
             if (event.keyCode === 13){
