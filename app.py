@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.secret_key = os.urandom(16) # 设置 Flask 的 session 密钥
 
 # 配置 OpenAI API 密钥
-openai.api_key = "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"
+openai.api_key = ""
 
 # ChatGPT 对话函数
 def chat_with_gpt(user_message):
