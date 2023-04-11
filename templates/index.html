@@ -14,15 +14,20 @@
 
         waitingForBotResponse = true;
         var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() {
+                xhr.onreadystatechange = function() {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status === 200) {
                     var response = JSON.parse(xhr.responseText);
-                    var botMessage = response.message;
-                    appendMessage("bot", botMessage);
-                    scrollToBottom();
-                    waitingForBotResponse = false;
-                    document.getElementById("sendMessageBtn").disabled = false; // 收到Bot的响应后启用发送按钮
+                    if (response.times >= 0) {
+                        var botMessage = response.message;
+                        appendMessage("bot", botMessage);
+                        scrollToBottom();
+                        waitingForBotResponse = false;
+                        document.getElementById("sendMessageBtn").disabled = false; // 收到Bot的响应后启用发送按钮
+                    } else {
+                        alert("次数不足"); // 弹窗提示次数不足
+                        document.getElementById("sendMessageBtn").disabled = true; // 次数不足时禁用发送按钮
+                    }
                 } else {
                     console.error("请求ChatGPT失败:" + xhr.statusText);
                     waitingForBotResponse = false;
