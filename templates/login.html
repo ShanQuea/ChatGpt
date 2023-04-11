@@ -1,52 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
+    <title>登录-抚州幼儿师范高等专科学校AI对话</title>
+    <meta charset="UTF-8">
 </head>
-<body>
-    <h1>Login</h1>
-    <form id="login-form">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
-        <br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <br>
-        <input type="submit" value="Login">
-    </form>
-    <p>Don't have an account? <a href="/register">Register</a></p>
-    <script>
-        // 使用 JavaScript 提交登录表单
-        document.getElementById("login-form").addEventListener("submit", function(event) {
-            event.preventDefault();  // 阻止表单默认提交行为
+<body style="background-color: #f0f0f0; font-family: Arial, sans-serif;">
+<h1 style="text-align: center; color: #007bff;">抚幼AI问答系统</h1>
+<form id="login-form"
+      style="max-width: 300px; margin: 0 auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 5px;">
+    <label for="username" style="display: block; margin-bottom: 10px; color: #333;">用户名:</label>
+    <input type="text" id="username" name="username" required
+           style="width: 100%; padding: 8px; border: 1px solid #dddddd; border-radius: 3px;">
+    <br>
+    <label for="password" style="display: block; margin-bottom: 10px; color: #333;">密码:</label>
+    <input type="password" id="password" name="password" required
+           style="width: 100%; padding: 8px; border: 1px solid #dddddd; border-radius: 3px;">
+    <br>
+    <input type="submit" value="登录"
+           style="width: 100%; padding: 10px; background-color: #007bff; color: #ffffff; border: none; border-radius: 3px; cursor: pointer;">
+</form>
+<p style="text-align: center; margin-top: 20px; color: #666;">还没有账号? <a href="/register"
+                                                                             style="color: #007bff; text-decoration: none;">点我注册你的抚幼AI账号</a>
+</p>
+<script>
+    // 使用 JavaScript 提交登录表单
+    document.getElementById("login-form").addEventListener("submit", function (event) {
+        event.preventDefault();  // 阻止表单默认提交行为
+        // 获取表单中的用户名和密码
+        var username = document.getElementById("username").value;
+        var password = document.getElementById("password").value;
 
-            // 获取表单中的用户名和密码
-            var username = document.getElementById("username").value;
-            var password = document.getElementById("password").value;
-
-            // 使用 AJAX 发送登录请求
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/login", true);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        var response = JSON.parse(xhr.responseText);
-                        if (response.result === "success") {
-                            // 登录成功，重载页面
-                            location.reload();
-                        } else {
-                            // 登录失败，显示错误消息
-                            alert("Login failed. Please check your username and password.");
-                        }
+        // 使用 AJAX 发送登录请求
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/login", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.result === "success") {
+                        // 登录成功，重载页面
+                        location.reload();
                     } else {
-                        // 请求失败，显示错误消息
-                        alert("Login failed. Please check your username and password.");
+                        // 登录失败，显示错误消息
+                        alert("登录失败,请检查你的用户名和密码!");
                     }
+                } else {
+                    // 请求失败，显示错误消息
+                    alert("登录失败,请检查你的用户名和密码!");
                 }
-            };
-            xhr.send("username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password));
-        });
-    </script>
+            }
+        };
+        xhr.send("username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password));
+    });
+</script>
 </body>
 </html>
