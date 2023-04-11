@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.secret_key = os.urandom(16)  # 设置 Flask 的 session 密钥
 
 # 配置 OpenAI API 密钥
-openai.api_key = ""
+openai.api_key = "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"
 
 
 # ChatGPT 对话函数
@@ -16,7 +16,7 @@ def chat_with_gpt(user_message):
     response = openai.Completion.create(
         engine="text-davinci-002",
         prompt=f"User: {user_message}\nBot:",
-        max_tokens=100
+        max_tokens=4060
     )
     bot_message = response["choices"][0]["text"].strip()
     return bot_message
@@ -36,7 +36,8 @@ def create_accounts_table():
         CREATE TABLE IF NOT EXISTS accounts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
+            password TEXT NOT NULL,
+            count INTEGER NOT NULL
         )
     """)
     conn.commit()
@@ -47,7 +48,8 @@ def create_accounts_table():
 def register_account(username, password):
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO accounts (username, password) VALUES (?, ?)", (username, password))
+    cursor.execute("INSERT INTO accounts (username, password, count) VALUES (?, ?, ?)",
+                   (username, password, 5))  # 设置初始次数为5
     conn.commit()
     conn.close()
 
@@ -113,9 +115,29 @@ def logout():
 # ChatGPT 聊天接口路由
 @app.route("/chat", methods=["POST"])
 def chat():
+    # 获取用户信息
     user_message = request.form["user_message"]
-    bot_message = chat_with_gpt(user_message)
-    return jsonify({"message": bot_message})
+    username = session["username"]
+
+    # 查询数据库中的账号信息
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM accounts WHERE username = ?", (username,))
+    account = cursor.fetchone()
+
+    times = account[3]
+    if times > 0:
+        # 调用 ChatGPT 对话函数
+        bot_message = chat_with_gpt(user_message)
+
+        # 更新剩余次数
+        cursor.execute("UPDATE accounts SET count = ? WHERE username = ?", (times - 1, username))
+        conn.commit()
+        conn.close()
+        return jsonify({"message": bot_message, "times": times - 1})
+    else:
+        conn.close()
+        return jsonify({"message": "次数不足 请及时充值", "times": times})
 
 
 if __name__ == "__main__":
