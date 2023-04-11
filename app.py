@@ -8,13 +8,14 @@ app = Flask(__name__)
 app.secret_key = os.urandom(16)  # 设置 Flask 的 session 密钥
 
 # 配置 OpenAI API 密钥
-openai.api_key = "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"
-
+#山鹊的API
+# openai.api_key = "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"
+openai.api_key = "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"
 
 # ChatGPT 对话函数
 def chat_with_gpt(user_message):
     response = openai.Completion.create(
-        engine="text-davinci-002",
+        engine="text-davinci-003",
         prompt=f"User: {user_message}\nBot:",
         max_tokens=4060
     )
