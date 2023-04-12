@@ -4,49 +4,47 @@
     <title>ChatGPT Demo</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
-
         var waitingForBotResponse = false;
 
         function requestChat(userMessage) {
-        if (waitingForBotResponse) {
-            return;
-        }
-
-        waitingForBotResponse = true;
-        var xhr = new XMLHttpRequest();
-                xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    var response = JSON.parse(xhr.responseText);
-                    if (response.times >= 0) {
-                        var botMessage = response.message;
-                        appendMessage("bot", botMessage);
-                        scrollToBottom();
-                        waitingForBotResponse = false;
-                        document.getElementById("sendMessageBtn").disabled = false; // 收到Bot的响应后启用发送按钮
-                    } else {
-                        alert("次数不足"); // 弹窗提示次数不足
-                        document.getElementById("sendMessageBtn").disabled = true; // 次数不足时禁用发送按钮
-                    }
-                } else {
-                    console.error("请求ChatGPT失败:" + xhr.statusText);
-                    waitingForBotResponse = false;
-                    document.getElementById("sendMessageBtn").disabled = false; // 请求失败后启用发送按钮
-                }
+            if (waitingForBotResponse) {
+                return;
             }
-        };
-        xhr.open("POST", "/chat", true);
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-        xhr.send("user_message=" + encodeURIComponent(userMessage));
+            waitingForBotResponse = true;
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.times >= 0) {
+                            var botMessage = response.message;
+                            appendMessage("bot", botMessage);
+                            scrollToBottom();
+                            waitingForBotResponse = false;
+                            document.getElementById("sendMessageBtn").disabled = false; // 收到Bot的响应后启用发送按钮
+                        } else {
+                            alert("次数不足"); // 弹窗提示次数不足
+                            document.getElementById("sendMessageBtn").disabled = true; // 次数不足时禁用发送按钮
+                        }
+                    } else {
+                        console.error("请求ChatGPT失败:" + xhr.statusText);
+                        waitingForBotResponse = false;
+                        document.getElementById("sendMessageBtn").disabled = false; // 请求失败后启用发送按钮
+                    }
+                }
+            };
+            xhr.open("POST", "/chat", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+            xhr.send("user_message=" + encodeURIComponent(userMessage));
         }
 
         function appendMessage(sender, message) {
-        var chatbox = document.getElementById("chatbox");
-        var messageElement = document.createElement("div");
-        messageElement.className = "message " + sender;
-        messageElement.innerHTML = "<strong>" + sender + ":</strong><br>" + message.replace(/\n/g, "<br>");
-        chatbox.appendChild(messageElement);
-    }
+            var chatbox = document.getElementById("chatbox");
+            var messageElement = document.createElement("div");
+            messageElement.className = "message " + sender;
+            messageElement.innerHTML = "<strong>" + sender + ":</strong><br>" + message.replace(/\n/g, "<br>");
+            chatbox.appendChild(messageElement);
+        }
 
 
         function scrollToBottom() {
@@ -54,19 +52,20 @@
             chatbox.scrollTop = chatbox.scrollHeight;
         }
 
+
         function sendMessage() {
-        var userMessage = document.getElementById("userMessage").value;
-        if (userMessage) {
-            appendMessage("user", userMessage);
-            requestChat(userMessage);
-            document.getElementById("userMessage").value = "";
-            document.getElementById("sendMessageBtn").disabled = true; // 禁用发送按钮
-            scrollToBottom();
+            var userMessage = document.getElementById("userMessage").value;
+            if (userMessage) {
+                appendMessage("user", userMessage);
+                requestChat(userMessage);
+                document.getElementById("userMessage").value = "";
+                document.getElementById("sendMessageBtn").disabled = true; // 禁用发送按钮
+                scrollToBottom();
+            }
         }
-    }
 
         // 处理 bot 的回复
-        chatlog.addEventListener("DOMNodeInserted", function(event) {
+        chatlog.addEventListener("DOMNodeInserted", function (event) {
             var botMessage = event.target;
             if (botMessage.classList && botMessage.classList.contains("bot")) {
                 if (!waitingForBotResponse) {
@@ -84,55 +83,76 @@
             }
         });
 
-        document.getElementById("userMessage").addEventListener("keydown", function(event) {
-            if (event.keyCode === 13){
+        document.getElementById("userMessage").addEventListener("keydown", function (event) {
+            if (event.keyCode === 13) {
                 event.preventDefault();
                 sendMessage();
             }
         });
     </script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        #chatbox {
-            height: 400px;
-            overflow-y: scroll;
-            background-color: #f9f9f9;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        .message {
-            margin-bottom: 10px;
-        }
-        .user {
-            color: blue;
-        }
-        .bot {
-            color: red;
-        }
-        #userMessage {
-            width: calc(100% - 80px);
-            padding: 5px;
-            margin-right: 10px;
-        }
-        #sendMessageBtn {
-            padding: 5px 10px;
-        }
-    </style>
-</head>
-<body>
-    <h1>ChatGPT Demo</h1>
-    <div id="chatbox"></div>
-    <div>
-        <input type="text" id="userMessage" placeholder="输入您的信息..." />
+    <head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+
+            #chatbox {
+                height: 400px;
+                overflow-y: scroll;
+                background-color: #f9f9f9;
+                padding: 10px;
+                margin-bottom: 10px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+            }
+
+            .message {
+                margin-bottom: 10px;
+            }
+
+            .user {
+                color: blue;
+            }
+
+            .bot {
+                color: red;
+            }
+
+            #userMessage {
+                width: calc(100% - 80px);
+                padding: 5px;
+                margin-right: 10px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+            }
+
+            #sendMessageBtn {
+                padding: 5px 10px;
+                background-color: #007bff;
+                color: #fff;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+            #sendMessageBtn:hover {
+                background-color: #0056b3;
+            }
+        </style>
+    </head>
+    <body>
+        <h1 style="text-align: center;">抚州幼儿师范高等专科学校AI系统 模型:ChatGPT-3.5-turbo</h1>
+        <div id="chatbox"></div>
+        <div style="display: flex; margin-top: 10px;">
+        <input type="text" id="userMessage" placeholder="输入您的信息..."/>
         <button id="sendMessageBtn" onclick="sendMessage()">发送</button>
-    </div>
-</body>
+        </div>
+    </body>
 </html>
