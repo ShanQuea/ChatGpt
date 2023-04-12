@@ -8,26 +8,37 @@ app = Flask(__name__)
 app.secret_key = os.urandom(16)  # 设置 Flask 的 session 密钥
 
 # 配置 OpenAI API 密钥
-#山鹊的API
-# openai.api_key = "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"
-openai.api_key = "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"
+openai.api_key = "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"
+
 
 # ChatGPT 对话函数
 def chat_with_gpt(user_message):
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=f"User: {user_message}\nBot:",
-        max_tokens=4060
+    # 之前的对话历史
+    conversation_history = [
+        {"role": "system", "content": "You: Hello, Bot: "},
+        {"role": "user", "content": "How are you?"},  # 上一次用户消息
+        {"role": "assistant", "content": "Bot: I'm doing well, thank you!"}  # 上一次助手的回复
+    ]
+    # 当前用户消息
+    current_message = {"role": "user", "content": user_message}
+    messages = conversation_history + [current_message]
+    response = openai.ChatCompletion.create(
+        messages=messages,
+        model="gpt-3.5-turbo-0301",
+        max_tokens=4000,
+        temperature=0.7,
+        n=1
     )
-    bot_message = response["choices"][0]["text"].strip()
+    conversation_history.append({"role": "user", "content": user_message})
+    bot_message = response["choices"][0]["message"]["content"].strip()
+    # 将助手的回复添加到对话历史中
+    conversation_history.append({"role": "assistant", "content": bot_message})
     return bot_message
-
 
 # 连接到 SQLite3 数据库
 def connect_db():
     conn = sqlite3.connect("accounts.db")
     return conn
-
 
 # 创建账号表格
 def create_accounts_table():

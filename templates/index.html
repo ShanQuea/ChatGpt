@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ChatGPT Demo</title>
+    <title>电院ChatGPT</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
 
@@ -106,44 +106,81 @@
             }
         });
     </script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        #chatbox {
-            height: 400px;
-            overflow-y: scroll;
-            background-color: #f9f9f9;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        .message {
-            margin-bottom: 10px;
-        }
-        .user {
-            color: blue;
-        }
-        .bot {
-            color: red;
-        }
-        #userMessage {
-            width: calc(100% - 80px);
-            padding: 5px;
-            margin-right: 10px;
-        }
-        #sendMessageBtn {
-            padding: 5px 10px;
-        }
-    </style>
+<style>
+    body {
+        background-image: linear-gradient(to right, #ffdb58, #ffbb7c, #ffa799, #ff9aa2);
+    }
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+    h1 {
+        font-size: 36px;
+        margin-bottom: 10px;
+        color: rgba(239, 143, 75, 0.98); /* 修改标题颜色为暖色调 */
+        text-align: center; /* 居中对齐 */
+    }
+    #chatbox {
+        height: 400px;
+        overflow-y: scroll;
+        background-color: #fbe6d3;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #e59b78;
+        border-radius: 5px;
+    }
+    .message {
+        margin-bottom: 10px;
+    }
+    .user {
+        color: #fff;
+        background-color: #e59b78;
+        padding: 5px;
+        border-radius: 5px;
+        display: flex; /* 使用flex布局，使上下排列 */
+        align-items: flex-start; /* 顶部对齐 */
+        margin-bottom: 5px;
+        word-break: break-word; /* 添加自动换行 */
+    }
+    .bot {
+        color: #fff;
+        background-color: #ff9aa2;
+        padding: 5px;
+        border-radius: 5px;
+        display: flex; /* 使用flex布局，使上下排列 */
+        align-items: flex-start; /* 顶部对齐 */
+        margin-bottom: 5px;
+        word-break: break-word; /* 添加自动换行 */
+    }
+    .user .content, .bot .content {
+        flex: 1; /* 使用flex布局，使内容部分自动扩展 */
+        max-width: calc(100% - 40px); /* 最大宽度为 chatbox 宽度减去 padding */
+    }
+    #userMessage {
+        width: calc(100% - 80px);
+        padding: 5px;
+        margin-right: 10px;
+        border: 1px solid #e59b78;
+        border-radius: 5px;
+    }
+    #sendMessageBtn {
+        padding: 5px 10px;
+        background-color: #ea5c29; /* 修改发送按钮背景颜色为暖色调 */
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold; /* 加粗字体 */
+    }
+    #sendMessageBtn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+</style>
 </head>
 <body>
-    <h1>ChatGPT Demo</h1>
+    <h1>电院ChatGpt</h1>
     <div id="chatbox"></div>
     <div>
         <input type="text" id="userMessage" placeholder="输入您的信息..." />
