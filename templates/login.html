@@ -1,27 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cn">
 <head>
-    <title>登录-抚州幼儿师范高等专科学校AI对话</title>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body style="background-color: #f0f0f0; font-family: Arial, sans-serif;">
-<h1 style="text-align: center; color: #007bff;">抚幼AI问答系统</h1>
-<form id="login-form"
-      style="max-width: 300px; margin: 0 auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 5px;">
-    <label for="username" style="display: block; margin-bottom: 10px; color: #333;">用户名:</label>
-    <input type="text" id="username" name="username" required
-           style="width: 100%; padding: 8px; border: 1px solid #dddddd; border-radius: 3px;">
-    <br>
-    <label for="password" style="display: block; margin-bottom: 10px; color: #333;">密码:</label>
-    <input type="password" id="password" name="password" required
-           style="width: 100%; padding: 8px; border: 1px solid #dddddd; border-radius: 3px;">
-    <br>
-    <input type="submit" value="登录"
-           style="width: 100%; padding: 10px; background-color: #007bff; color: #ffffff; border: none; border-radius: 3px; cursor: pointer;">
-</form>
-<p style="text-align: center; margin-top: 20px; color: #666;">还没有账号? <a href="/register"
-                                                                             style="color: #007bff; text-decoration: none;">点我注册你的抚幼AI账号</a>
-</p>
+<body>
+    <div class="content">
+        <div class="login-wrapper">
+            <div class="left-img">
+                <div class="glass">
+                    <div class="tips">
+                        <div class="title">
+                            电院AI问答系统
+                        </div>
+                        <h1>探索AI</h1>
+                        <span>期待您的加入</span>
+                        <span>我们持续更新中</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-login-form">
+                <form class="form-wrapper" id="login-form" name="login-form">
+                    <h1>电院AI问答系统</h1>
+                    <div class="input-items">
+                        <span class="input-tips">
+                            帐号
+                        </span>
+                        <input type="text" id="username" class="inputs" placeholder="输入你的账号">
+                    </div>
+                    <div class="input-items">
+                        <span class="input-tips">
+                            密码
+                        </span>
+                        <input type="password" id="password" class="inputs" placeholder="输入你的密码">
+                        <span class="forgot">忘记密码</span>
+                    </div>
+                    <button class="btn" id="submit" type="submit">登陆</button>
+                    <div class="siginup-tips">
+                        <span>还有没有账号?</span>
+                        <span id="register-link">点击注册</span>
+                    </div>
+                    <div class="other-login">
+                        <div class="divider">
+                            <span class="line"></span>
+                            <span class="divider-text">或</span>
+                            <span class="line"></span>
+                        </div>
+                        <div class="other-login-wrapper">
+                            <div class="other-login-item">
+                                <img src="../static/asset/QQ.png" alt="QQ">
+                            </div>
+                            <div class="other-login-item">
+                                <img src="../static/asset/WeChat.png" alt="微信">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<script>
+    // 获取点击注册元素的引用
+    var registerLink = document.getElementById("register-link");
+
+    // 添加点击事件监听器
+    registerLink.addEventListener("click", function() {
+        // 跳转到注册页面
+        location.href = "/register";
+    });
+</script>
 <script>
     // 使用 JavaScript 提交登录表单
     document.getElementById("login-form").addEventListener("submit", function (event) {
