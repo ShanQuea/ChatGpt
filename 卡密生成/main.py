@@ -9,7 +9,7 @@ c = conn.cursor()
 
 
 c.execute('''CREATE TABLE IF NOT EXISTS card
-             (id INTEGER PRIMARY KEY AUTOINCREMENT, card_no TEXT, count INTEGER)''')
+             (id INTEGER PRIMARY KEY AUTOINCREMENT, card_no TEXT, count INTEGER, is_use BOOLEAN DEFAULT 0)''')
 conn.commit()
 
 
