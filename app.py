@@ -1,3 +1,4 @@
+import codecs
 import json
 import os
 import time
@@ -10,45 +11,79 @@ app = Flask(__name__)
 app.secret_key = os.urandom(16)  # 设置 Flask 的 session 密钥
 
 # 配置 OpenAI API 密钥
-openai.api_key = "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"
-
+openai.api_key = "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"
 
 # ChatGPT 对话函数
 conversation_history = []
 
-def chat_with_gpt(user_message):
+
+import json
+
+
+# ...
+
+def get_user_chat_history(username):
+    user_chat_history_folder = os.path.join("chat", username)
+    chat_history_file = os.path.join(user_chat_history_folder, "chat_history.json")
+
+    if os.path.exists(chat_history_file):
+        with open(chat_history_file, 'r') as f:
+            chat_history_str = f.read()
+            if chat_history_str:
+                # 将读取到的字符串解析为 JSON 格式
+                chat_history = json.loads(chat_history_str)
+                return chat_history
+    return None
+
+
+
+def add_user_chat_history(username, user_message, bot_message):
+    user_chat_history_folder = os.path.join("chat", username)
+    chat_history_file = os.path.join(user_chat_history_folder, "chat_history.json")
+
+    if not os.path.exists(user_chat_history_folder):
+        os.makedirs(user_chat_history_folder)
+    chat_data = []
+    if os.path.exists(chat_history_file):
+        with open(chat_history_file, 'r') as f:
+            chat_data = json.load(f)
+    chat_data.append({"role": "user", "content": user_message})
+    chat_data.append({"role": "assistant", "content": bot_message})
+    with open(chat_history_file, 'w') as f:
+        json.dump(chat_data, f, ensure_ascii=False, indent=4)
+
+
+
+def chat_with_gpt(user_message,username):
     start_time = time.time()
-    global conversation_history  # 在函数内使用全局变量
-    # 如果之前没有对话历史，创建一个初始对话历史
-    if not conversation_history:
-        conversation_history.append({"role": "system", "content": "You: Hello, Bot: "})
-    # 当前用户消息
-    current_message = {"role": "user", "content": user_message}
-    messages = conversation_history + [current_message]
+    chat_history = get_user_chat_history(username) or []
+    chat_history.append({"role": "user", "content": user_message})
+
     response = openai.ChatCompletion.create(
-        messages=messages,
+        messages=chat_history,
         model="gpt-3.5-turbo-0301",
-        max_tokens=4000,
+        max_tokens=2048,
         temperature=0.7,
         n=1
     )
+    print(chat_history)
     bot_message = response["choices"][0]["message"]["content"].strip()
     # 将助手的回复添加到对话历史中
-    conversation_history.append({"role": "user", "content": user_message})
-    conversation_history.append({"role": "assistant", "content": bot_message})
+    bot_message = response["choices"][0]["message"]["content"].strip()
+    add_user_chat_history(username, user_message, bot_message)
 
     end_time = time.time()
     time_taken = end_time - start_time
     print(f"执行时间：{time_taken} 秒")
 
-    print(user_message)
-    print(bot_message)
     return bot_message
+
 
 # 连接到 SQLite3 数据库
 def connect_db():
     conn = sqlite3.connect("accounts.db")
     return conn
+
 
 # 创建账号表格
 def create_accounts_table():
@@ -99,7 +134,6 @@ def login():
     cursor.execute("SELECT * FROM accounts WHERE username = ?", (username,))
     account = cursor.fetchone()
 
-
     # 检查账号是否存在并验证密码
     if account is not None and account[2] == password:
 
@@ -115,7 +149,7 @@ def login():
         chat_history_file = os.path.join(user_chat_history_folder, "chat_history.json")
         if not os.path.exists(chat_history_file):
             with open(chat_history_file, "w") as f:
-                json.dump({}, f)
+                json.dump([], f)
 
         return jsonify({"result": "success", "username": username})
     else:
@@ -165,11 +199,16 @@ def chat():
     times = account[3]
     if times > 0:
         # 调用 ChatGPT 对话函数
-        bot_message = chat_with_gpt(user_message)
+
+        bot_message = chat_with_gpt(user_message,username)
 
         # 更新剩余次数
         cursor.execute("UPDATE accounts SET count = ? WHERE username = ?", (times - 1, username))
         conn.commit()
+
+
+
+
         conn.close()
         return jsonify({"message": bot_message, "times": times - 1})
     else:
