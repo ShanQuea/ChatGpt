@@ -1,0 +1,64 @@
+/* 设置背景颜色和字体 */
+body {
+    /* 使用暖色调的渐变色作为背景 */
+    background: linear-gradient(to right, #f127e6, #f5af19);
+    font-family: Arial, sans-serif;
+}
+
+/* 设置容器的宽度和居中 */
+.container {
+    width: 600px;
+    margin: 0 auto;
+    /* 添加一些阴影和圆角效果 */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    /* 使用白色作为容器的背景 */
+    background-color: white;
+}
+
+/* 设置标题的颜色和对齐 */
+h1 {
+    color: #333333;
+    text-align: center;
+}
+
+/* 设置标签和输入框的样式 */
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+input {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cccccc;
+    /* 添加一些过渡效果 */
+    transition: border-color 0.3s;
+}
+
+/* 当输入框获得焦点时，改变边框颜色 */
+input:focus {
+    border-color: #333333;
+}
+
+/* 设置按钮的样式 */
+.button {
+    display: block;
+    width: 200px;
+    margin: 20px auto;
+    padding: 10px;
+    border: none;
+    /* 使用暖色调的渐变色作为按钮的背景 */
+    background: linear-gradient(to right, #f127e6, #f5af19);
+    color: white;
+    /* 添加一些阴影和圆角效果 */
+    box-shadow: inset 0 -3px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+}
+
+/* 当鼠标悬停在按钮上时，改变背景颜色 */
+.button:hover {
+    /* 使用暗一点的渐变色作为背景 */
+    background: linear-gradient(to right, #c71d6f, #d09653);
+}
