@@ -1,4 +1,6 @@
+import json
 import os
+import time
 import sqlite3
 import openai
 
@@ -8,17 +10,18 @@ app = Flask(__name__)
 app.secret_key = os.urandom(16)  # 设置 Flask 的 session 密钥
 
 # 配置 OpenAI API 密钥
-openai.api_key = "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"
+openai.api_key = "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"
 
 
 # ChatGPT 对话函数
+conversation_history = []
+
 def chat_with_gpt(user_message):
-    # 之前的对话历史
-    conversation_history = [
-        {"role": "system", "content": "You: Hello, Bot: "},
-        {"role": "user", "content": "How are you?"},  # 上一次用户消息
-        {"role": "assistant", "content": "Bot: I'm doing well, thank you!"}  # 上一次助手的回复
-    ]
+    start_time = time.time()
+    global conversation_history  # 在函数内使用全局变量
+    # 如果之前没有对话历史，创建一个初始对话历史
+    if not conversation_history:
+        conversation_history.append({"role": "system", "content": "You: Hello, Bot: "})
     # 当前用户消息
     current_message = {"role": "user", "content": user_message}
     messages = conversation_history + [current_message]
@@ -29,10 +32,17 @@ def chat_with_gpt(user_message):
         temperature=0.7,
         n=1
     )
-    conversation_history.append({"role": "user", "content": user_message})
     bot_message = response["choices"][0]["message"]["content"].strip()
     # 将助手的回复添加到对话历史中
+    conversation_history.append({"role": "user", "content": user_message})
     conversation_history.append({"role": "assistant", "content": bot_message})
+
+    end_time = time.time()
+    time_taken = end_time - start_time
+    print(f"执行时间：{time_taken} 秒")
+
+    print(user_message)
+    print(bot_message)
     return bot_message
 
 # 连接到 SQLite3 数据库
@@ -89,9 +99,24 @@ def login():
     cursor.execute("SELECT * FROM accounts WHERE username = ?", (username,))
     account = cursor.fetchone()
 
+
     # 检查账号是否存在并验证密码
     if account is not None and account[2] == password:
+
         session["username"] = username
+        session["conversation_history"] = []
+
+        # 创建用户专属的聊天记录文件夹
+        user_chat_history_folder = os.path.join("chat", username)
+        if not os.path.exists(user_chat_history_folder):
+            os.makedirs(user_chat_history_folder)
+
+        # 检查用户聊天记录文件是否存在，如果没有则创建
+        chat_history_file = os.path.join(user_chat_history_folder, "chat_history.json")
+        if not os.path.exists(chat_history_file):
+            with open(chat_history_file, "w") as f:
+                json.dump({}, f)
+
         return jsonify({"result": "success", "username": username})
     else:
         # 返回登录失败的 JSON 响应，包含错误信息
@@ -154,4 +179,4 @@ def chat():
 
 if __name__ == "__main__":
     create_accounts_table()  # 创建账号表格
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
