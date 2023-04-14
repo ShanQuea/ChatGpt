@@ -1,26 +1,25 @@
-import codecs
-import json
 import os
 import time
 import sqlite3
 import openai
-
+import json
 from flask import Flask, render_template, request, jsonify, session
 
 app = Flask(__name__)
 app.secret_key = os.urandom(16)  # 设置 Flask 的 session 密钥
 
 # 配置 OpenAI API 密钥
-openai.api_key = "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"
-
-# ChatGPT 对话函数
-conversation_history = []
+openai.api_key = "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"
 
 
-import json
+def clear_user_chat_history(username):
+    user_chat_history_folder = os.path.join("chat", username)
+    chat_history_file = os.path.join(user_chat_history_folder, "chat_history.json")
 
+    if os.path.exists(chat_history_file):
+        with open(chat_history_file, 'w') as f:
+            f.write('[]')
 
-# ...
 
 def get_user_chat_history(username):
     user_chat_history_folder = os.path.join("chat", username)
@@ -34,7 +33,6 @@ def get_user_chat_history(username):
                 chat_history = json.loads(chat_history_str)
                 return chat_history
     return None
-
 
 
 def add_user_chat_history(username, user_message, bot_message):
@@ -53,8 +51,17 @@ def add_user_chat_history(username, user_message, bot_message):
         json.dump(chat_data, f, ensure_ascii=False, indent=4)
 
 
+def chat_with_gpt(user_message, username):
+    if user_message.strip() == "/clear":
+        # 清除用户聊天历史数据
+        clear_user_chat_history(username)
+        conn = connect_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM accounts WHERE username = ?", (username,))
 
-def chat_with_gpt(user_message,username):
+        cursor.execute("UPDATE accounts SET chat_count = ? WHERE username = ?", (0, username))
+        return "聊天历史已清除"
+
     start_time = time.time()
     chat_history = get_user_chat_history(username) or []
     chat_history.append({"role": "user", "content": user_message})
@@ -67,7 +74,6 @@ def chat_with_gpt(user_message,username):
         n=1
     )
     print(chat_history)
-    bot_message = response["choices"][0]["message"]["content"].strip()
     # 将助手的回复添加到对话历史中
     bot_message = response["choices"][0]["message"]["content"].strip()
     add_user_chat_history(username, user_message, bot_message)
@@ -80,33 +86,33 @@ def chat_with_gpt(user_message,username):
 
 
 # 连接到 SQLite3 数据库
+# 连接数据库
 def connect_db():
     conn = sqlite3.connect("accounts.db")
     return conn
 
 
 # 创建账号表格
-def create_accounts_table():
-    conn = connect_db()
-    cursor = conn.cursor()
+def create_accounts_table(cursor):
+    # 创建 accounts 表格
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS accounts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            count INTEGER NOT NULL
-        )
-    """)
-    conn.commit()
-    conn.close()
+            CREATE TABLE IF NOT EXISTS accounts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                count INTEGER NOT NULL,
+                chat_count INTEGER NOT NULL 
+            )
+        """)
 
 
 # 注册新账号
 def register_account(username, password):
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO accounts (username, password, count) VALUES (?, ?, ?)",
-                   (username, password, 5))  # 设置初始次数为5
+    create_accounts_table(cursor)
+    cursor.execute("INSERT INTO accounts (username, password, count, chat_count) VALUES (?, ?, ?, ?)",
+                   (username, password, 5, 0))
     conn.commit()
     conn.close()
 
@@ -129,6 +135,7 @@ def login():
     # 连接到数据库
     conn = connect_db()
     cursor = conn.cursor()
+    create_accounts_table(cursor)
 
     # 查询数据库中的账号信息
     cursor.execute("SELECT * FROM accounts WHERE username = ?", (username,))
@@ -197,17 +204,21 @@ def chat():
     account = cursor.fetchone()
 
     times = account[3]
+    chat_count = account[4]
     if times > 0:
-        # 调用 ChatGPT 对话函数
+        chat_count += 1
+        #  修改聊天上限次数
+        if chat_count == 10:
+            chat_count = 0
+            clear_user_chat_history(username)
+            bot_message = "该对话 已经达到上限 已帮您清除聊天记录 开启新的对话"
+        else:
+            bot_message = chat_with_gpt(user_message, username)
 
-        bot_message = chat_with_gpt(user_message,username)
-
-        # 更新剩余次数
+        # 更新剩余次数 聊天次数
         cursor.execute("UPDATE accounts SET count = ? WHERE username = ?", (times - 1, username))
+        cursor.execute("UPDATE accounts SET chat_count = ? WHERE username = ?", (chat_count, username))
         conn.commit()
-
-
-
 
         conn.close()
         return jsonify({"message": bot_message, "times": times - 1})
@@ -217,5 +228,4 @@ def chat():
 
 
 if __name__ == "__main__":
-    create_accounts_table()  # 创建账号表格
     app.run(host='0.0.0.0', port=5000)
