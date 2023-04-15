@@ -1,0 +1,23 @@
+<html>
+<head>
+    <title>充值页面</title>
+    <!-- 添加一个外部CSS文件来定义样式 -->
+    <link rel="stylesheet" href="../static/asset/pay.css">
+    <meta charset="UTF-8">
+</head>
+<body>
+    <div class="container">
+        <h1>欢迎充值抚幼AI模型兑换次数<br>(维护服务器和续费也是要成本滴嘛)</h1>
+        <form action="recharge.php" method="post">
+            <!-- 添加一些标签和占位符来指示输入框的用途 -->
+            <label for="username">请输入你的用户名：</label>
+            <input type="text" id="username" name="username" placeholder="请输入你的用户名" required>
+            <label for="cdk">请输入你的CDK：</label>
+            <input type="text" id="cdk" name="cdk" placeholder="请输入你的CDK" required>
+            <br>
+            <!-- 添加一些样式和类名来美化按钮 -->
+            <input type="submit" value="充值" class="button">
+        </form>
+    </div>
+</body>
+</html>
