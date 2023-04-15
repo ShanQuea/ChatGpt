@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.secret_key = os.urandom(16)  # 设置 Flask 的 session 密钥
 
 # 配置 OpenAI API 密钥
-openai.api_key = "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"
+openai.api_key = "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"
 
 
 def clear_user_chat_history(username):
@@ -55,7 +55,7 @@ def chat_with_gpt(user_message, username):
     if user_message.strip() == "/clear":
         # 清除用户聊天历史数据
         clear_user_chat_history(username)
-        conn = connect_db()
+        conn = connect_account()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM accounts WHERE username = ?", (username,))
 
@@ -87,8 +87,13 @@ def chat_with_gpt(user_message, username):
 
 # 连接到 SQLite3 数据库
 # 连接数据库
-def connect_db():
+def connect_account():
     conn = sqlite3.connect("accounts.db")
+    return conn
+
+
+def connect_card():
+    conn = sqlite3.connect("card.db")
     return conn
 
 
@@ -108,7 +113,7 @@ def create_accounts_table(cursor):
 
 # 注册新账号
 def register_account(username, password):
-    conn = connect_db()
+    conn = connect_account()
     cursor = conn.cursor()
     create_accounts_table(cursor)
     cursor.execute("INSERT INTO accounts (username, password, count, chat_count) VALUES (?, ?, ?, ?)",
@@ -133,7 +138,7 @@ def login():
     password = request.form["password"]
 
     # 连接到数据库
-    conn = connect_db()
+    conn = connect_account()
     cursor = conn.cursor()
     create_accounts_table(cursor)
 
@@ -172,7 +177,7 @@ def register():
         password = request.form["password"]
         confirm_password = request.form["confirm_password"]
         # 在这里可以添加验证用户名和密码的逻辑，例如检查用户名是否已存在等
-        conn = connect_db()
+        conn = connect_account()
         cursor = conn.cursor()
         create_accounts_table(cursor)
 
@@ -195,6 +200,48 @@ def register():
         return render_template("register.html")
 
 
+@app.route("/cdk", methods=["GET", "POST"])
+def cdk():
+    if request.method == "POST":
+        username = request.form["username"]
+        cdk = request.form["cdk"]
+
+        # 查询数据库中的账号信息
+        conn = connect_account()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM accounts WHERE username = ?", (username,))
+        account = cursor.fetchone()
+
+        times = account[3]
+
+
+        if account is not None:
+            # 检查该卡密是否存在
+            card_conn = connect_card()
+            card_cursor = card_conn.cursor()
+            card_cursor.execute("SELECT count, is_use FROM card WHERE card_no = ?", (cdk,))
+            card_data = card_cursor.fetchone()
+            if card_data is not None:
+                count = card_data[0]
+                cursor.execute("UPDATE accounts SET count = ? WHERE username = ?", (count + times, username))
+                isUse = card_data[1]
+                if isUse != 0:
+                    return jsonify({"result": "isUse"})
+                else:
+
+                    cursor.execute("UPDATE accounts SET count = ? WHERE username = ?", (times + count, username))
+                    conn.commit()
+                    card_cursor.execute("UPDATE card SET is_use = ? WHERE card_no = ?", (1, cdk))
+                    card_conn.commit()
+                    return jsonify({"result": "success"})
+            else:
+                return jsonify({"result": "nonentity"})
+        else:
+            return jsonify({"result": "fail"})
+
+    else:
+        return render_template("paycdk.html")
+
 # 登出路由
 @app.route("/logout")
 def logout():
@@ -211,7 +258,7 @@ def chat():
     username = session["username"]
 
     # 查询数据库中的账号信息
-    conn = connect_db()
+    conn = connect_account()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM accounts WHERE username = ?", (username,))
     account = cursor.fetchone()
@@ -234,10 +281,10 @@ def chat():
         conn.commit()
 
         conn.close()
-        return jsonify({"message": bot_message, "times": times - 1,"chat_count": chat_count})
+        return jsonify({"message": bot_message, "times": times - 1, "chat_count": chat_count})
     else:
         conn.close()
-        return jsonify({"message": "次数不足 请及时充值", "times": times,"chat_count": chat_count})
+        return jsonify({"message": "次数不足 请及时充值", "times": times, "chat_count": chat_count})
 
 
 if __name__ == "__main__":

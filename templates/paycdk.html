@@ -1,23 +1,53 @@
 <html>
 <head>
     <title>充值页面</title>
-    <!-- 添加一个外部CSS文件来定义样式 -->
     <link rel="stylesheet" href="../static/asset/pay.css">
     <meta charset="UTF-8">
 </head>
 <body>
     <div class="container">
-        <h1>欢迎充值抚幼AI模型兑换次数<br>(维护服务器和续费也是要成本滴嘛)</h1>
-        <form action="recharge.php" method="post">
-            <!-- 添加一些标签和占位符来指示输入框的用途 -->
+        <h1>欢迎充值电院AI模型兑换次数<br>(维护服务器和续费也是要成本滴嘛)</h1>
+        <form id="Form" method="post" action="/cdk">
             <label for="username">请输入你的用户名：</label>
             <input type="text" id="username" name="username" placeholder="请输入你的用户名" required>
             <label for="cdk">请输入你的CDK：</label>
             <input type="text" id="cdk" name="cdk" placeholder="请输入你的CDK" required>
             <br>
-            <!-- 添加一些样式和类名来美化按钮 -->
             <input type="submit" value="充值" class="button">
         </form>
     </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // 使用 JavaScript 监听表单提交事件
+        document.getElementById('Form').addEventListener('submit', function(event) {
+            event.preventDefault(); // 阻止表单的默认提交行为
+            var username = document.getElementById('username').value;
+            var cdk = document.getElementById('cdk').value;
+            // 使用 jQuery 发送 AJAX 请求到后端
+            $.ajax({
+                url: '/cdk',
+                method: 'POST',
+                data: {username: username, cdk: cdk},
+                success: function(response) {
+                    if (response.result === 'isUse') {
+                        // 根据后端返回的数据显示错误信息
+                        alert("该卡密 已被使用")
+                    }
+                    if (response.result === 'fail'){
+                        alert("该用户名不存在");
+                    }
+                    if(response.result === 'nonentity'){
+                        alert("该卡密不存在")
+                    }
+                    if (response.result === 'success') {
+                        alert("充值成功");
+                    }
+                },
+                error: function(error) {
+                    alert('提交失败，请重试！');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
