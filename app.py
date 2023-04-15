@@ -27,12 +27,10 @@ def get_user_chat_history(username):
 
     if os.path.exists(chat_history_file):
         with open(chat_history_file, 'r') as f:
-            chat_history_str = f.read()
-            if chat_history_str:
-                # 将读取到的字符串解析为 JSON 格式
-                chat_history = json.loads(chat_history_str)
-                return chat_history
+            chat_history = json.load(f)
+            return chat_history
     return None
+
 
 
 def add_user_chat_history(username, user_message, bot_message):
@@ -73,7 +71,6 @@ def chat_with_gpt(user_message, username):
         temperature=0.7,
         n=1
     )
-    print(chat_history)
     # 将助手的回复添加到对话历史中
     bot_message = response["choices"][0]["message"]["content"].strip()
     add_user_chat_history(username, user_message, bot_message)
@@ -162,9 +159,11 @@ def login():
         if not os.path.exists(chat_history_file):
             with open(chat_history_file, "w") as f:
                 json.dump([], f)
+        conn.close()
 
         return jsonify({"result": "success", "username": username})
     else:
+        conn.close()
         # 返回登录失败的 JSON 响应，包含错误信息
         return jsonify({"result": "fail", "error": "密码错误或账号不存在"})
 
@@ -231,12 +230,17 @@ def cdk():
 
                     cursor.execute("UPDATE accounts SET count = ? WHERE username = ?", (times + count, username))
                     conn.commit()
+                    conn.close()
                     card_cursor.execute("UPDATE card SET is_use = ? WHERE card_no = ?", (1, cdk))
                     card_conn.commit()
+                    card_conn.close()
                     return jsonify({"result": "success"})
             else:
+                conn.close()
+                card_conn.close()
                 return jsonify({"result": "nonentity"})
         else:
+            conn.close()
             return jsonify({"result": "fail"})
 
     else:
