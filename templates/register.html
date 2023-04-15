@@ -1,23 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cn">
 <head>
-    <title>注册</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f8f8f8;">
-    <div style="max-width: 400px; margin: 0 auto; padding: 20px; background-color: #fff; box-shadow: 0 0 5px rgba(0,0,0,0.1);">
-        <h1 style="text-align: center; color: #333;">注册</h1>
-        <form action="/register" method="post" style="margin-top: 20px;">
-            <label for="username" style="display: block; margin-bottom: 10px; color: #666;">用户名:</label>
-            <input type="text" id="username" name="username" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-            <br>
-            <label for="password" style="display: block; margin-bottom: 10px; color: #666;">密码:</label>
-            <input type="password" id="password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-            <br>
-            <label for="confirm_password" style="display: block; margin-bottom: 10px; color: #666;">确认密码:</label>
-            <input type="password" id="confirm_password" name="confirm_password" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-            <br>
-            <input type="submit" value="注册" style="width: 100%; padding: 10px; background-color: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer;">
-        </form>
+<body>
+    <div class="content">
+        <div class="login-wrapper">
+            <div class="left-img">
+                <div class="glass">
+                    <div class="tips">
+                        <div class="title">
+                            电院AI系统
+                        </div>
+                        <h1>探索AI</h1>
+                        <span>期待您的加入</span>
+                        <span>我们持续更新中</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-login-form">
+                <form class="form-wrapper" id="register-form" name="register-form" action="/register" method="POST">
+                    <h1>注册账号</h1>
+                    <div class="input-items">
+                        <span class="input-tips">
+                            帐号
+                        </span>
+                        <input type="text" id="username" name="username" class="inputs" placeholder="输入你的账号">
+                    </div>
+                    <div class="input-items">
+                        <span class="input-tips">
+                            密码
+                        </span>
+                        <input type="password" id="password" name="password" class="inputs" placeholder="输入你的密码">
+                    </div>
+
+                    <div class="input-items">
+                        <span class="input-tips">
+                            确定密码
+                        </span>
+                        <input type="password" id="confirm_password" name="confirm_password" class="inputs" placeholder="再次输入你的密码">
+                    </div>
+
+                    <button class="btn" id="submit" type="submit" >注册</button>
+                </form>
+            </div>
+        </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // 使用 JavaScript 监听表单提交事件
+        document.getElementById('register-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // 阻止表单的默认提交行为
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+            var confirm_password = document.getElementById('confirm_password').value;
+            // 使用 jQuery 发送 AJAX 请求到后端
+            $.ajax({
+                url: '/register',
+                method: 'POST',
+                data: {username: username, password: password, confirm_password: confirm_password},
+                success: function(response) {
+                    if (response.result === 'error') {
+                        // 根据后端返回的数据显示错误信息
+                        alert("请检查密码,两次输入的密码不一致")
+                    }
+                    if (response.result === 'fail'){
+                        alert("用户名已存在，请尝试其他用户名");
+                    }
+                    if (response.result === 'success') {
+                        alert("注册成功！将在3秒后自动跳转至登录界面");
+                        setTimeout(function() {
+                            window.location.href = "/";
+                        }, 3000);
+                    }
+                },
+                error: function(error) {
+                    alert('提交失败，请重试！');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

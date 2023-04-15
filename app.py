@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.secret_key = os.urandom(16)  # 设置 Flask 的 session 密钥
 
 # 配置 OpenAI API 密钥
-openai.api_key = "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"
+openai.api_key = "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"
 
 
 def clear_user_chat_history(username):
@@ -170,11 +170,24 @@ def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
+        confirm_password = request.form["confirm_password"]
         # 在这里可以添加验证用户名和密码的逻辑，例如检查用户名是否已存在等
+        conn = connect_db()
+        cursor = conn.cursor()
+        create_accounts_table(cursor)
 
+        # 检查用户名是否已存在
+        cursor.execute("SELECT * FROM accounts WHERE username = ?", (username,))
+        existing_account = cursor.fetchone()
+        if existing_account is not None:
+            conn.close()
+            return jsonify({"result": "fail"})
         # 将账号信息插入到数据库
-        register_account(username, password)
+        if password != confirm_password:
+            conn.close()
+            return jsonify({"result": "error"})
 
+        register_account(username, password)
         # 返回注册成功的 JSON 响应
         return jsonify({"result": "success", "username": username})
     else:
@@ -221,10 +234,10 @@ def chat():
         conn.commit()
 
         conn.close()
-        return jsonify({"message": bot_message, "times": times - 1})
+        return jsonify({"message": bot_message, "times": times - 1,"chat_count": chat_count})
     else:
         conn.close()
-        return jsonify({"message": "次数不足 请及时充值", "times": times})
+        return jsonify({"message": "次数不足 请及时充值", "times": times,"chat_count": chat_count})
 
 
 if __name__ == "__main__":
