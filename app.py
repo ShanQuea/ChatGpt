@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.secret_key = os.urandom(16)  # 设置 Flask 的 session 密钥
 
 # 配置 OpenAI API 密钥
-openai.api_key = "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"
+openai.api_key = "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"
 
 
 def clear_user_chat_history(username):
@@ -32,7 +32,6 @@ def get_user_chat_history(username):
     return None
 
 
-
 def add_user_chat_history(username, user_message, bot_message):
     user_chat_history_folder = os.path.join("chat", username)
     chat_history_file = os.path.join(user_chat_history_folder, "chat_history.json")
@@ -49,37 +48,49 @@ def add_user_chat_history(username, user_message, bot_message):
         json.dump(chat_data, f, ensure_ascii=False, indent=4)
 
 
+proxies = {
+    'http': 'http://proxy.example.com:8080',
+    'https': 'http://proxy.example.com:8080',
+}
+
+
 def chat_with_gpt(user_message, username):
-    if user_message.strip() == "/clear":
-        # 清除用户聊天历史数据
-        clear_user_chat_history(username)
-        conn = connect_account()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM accounts WHERE username = ?", (username,))
+    try:
+        if user_message.strip() == "/clear":
+            # 清除用户聊天历史数据
+            clear_user_chat_history(username)
+            conn = connect_account()
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM accounts WHERE username = ?", (username,))
 
-        cursor.execute("UPDATE accounts SET chat_count = ? WHERE username = ?", (0, username))
-        return "聊天历史已清除"
+            cursor.execute("UPDATE accounts SET chat_count = ? WHERE username = ?", (0, username))
+            return "聊天历史已清除"
 
-    start_time = time.time()
-    chat_history = get_user_chat_history(username) or []
-    chat_history.append({"role": "user", "content": user_message})
+        start_time = time.time()
+        chat_history = get_user_chat_history(username) or []
+        chat_history.append({"role": "user", "content": user_message})
 
-    response = openai.ChatCompletion.create(
-        messages=chat_history,
-        model="gpt-3.5-turbo-0301",
-        max_tokens=2048,
-        temperature=0.7,
-        n=1
-    )
-    # 将助手的回复添加到对话历史中
-    bot_message = response["choices"][0]["message"]["content"].strip()
-    add_user_chat_history(username, user_message, bot_message)
+        response = openai.ChatCompletion.create(
+            # proxies=proxies,
+            messages=chat_history,
+            model="gpt-3.5-turbo-0301",
+            max_tokens=2048,
+            temperature=0.7,
+            n=1
+        )
+        # 将助手的回复添加到对话历史中
+        bot_message = response["choices"][0]["message"]["content"].strip()
+        add_user_chat_history(username, user_message, bot_message)
 
-    end_time = time.time()
-    time_taken = end_time - start_time
-    print(f"执行时间：{time_taken} 秒")
+        end_time = time.time()
+        time_taken = end_time - start_time
+        print(f"执行时间：{time_taken} 秒")
 
-    return bot_message
+        return bot_message
+    except Exception as e:
+        # 返回错误信息
+        error_message = f"请截图反应给网站管理员  发生错误: {str(e)} "
+        return error_message
 
 
 # 连接到 SQLite3 数据库
@@ -146,8 +157,13 @@ def login():
     # 检查账号是否存在并验证密码
     if account is not None and account[2] == password:
 
+        if session.get("username") == username:
+            conn.close()
+            return jsonify({"result": "fail2", "error": "该账号已登录"})
+
         session["username"] = username
         session["conversation_history"] = []
+
 
         # 创建用户专属的聊天记录文件夹
         user_chat_history_folder = os.path.join("chat", username)
@@ -213,7 +229,6 @@ def cdk():
 
         times = account[3]
 
-
         if account is not None:
             # 检查该卡密是否存在
             card_conn = connect_card()
@@ -246,6 +261,7 @@ def cdk():
     else:
         return render_template("paycdk.html")
 
+
 # 登出路由
 @app.route("/logout")
 def logout():
@@ -272,7 +288,7 @@ def chat():
     if times > 0:
         chat_count += 1
         #  修改聊天上限次数
-        if chat_count == 10:
+        if chat_count == 30:
             chat_count = 0
             clear_user_chat_history(username)
             bot_message = "该对话 已经达到上限 已帮您清除聊天记录 开启新的对话"
