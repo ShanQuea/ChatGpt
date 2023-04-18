@@ -9,7 +9,23 @@ app = Flask(__name__)
 app.secret_key = os.urandom(16)  # 设置 Flask 的 session 密钥
 
 # 配置 OpenAI API 密钥
-openai.api_key = "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"
+openai.api_key = "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"
+
+
+def remove_json_items(username, num_items):
+    user_chat_history_folder = os.path.join("chat", username)
+    chat_history_file = os.path.join(user_chat_history_folder, "chat_history.json")
+
+    # 读取 JSON 文件
+    with open(chat_history_file, 'r') as f:
+        data = json.load(f)
+
+    # 删除前 num_items 个字典的内容
+    data = data[num_items:]
+
+    # 将修改后的数据写回 JSON 文件，保持原始格式
+    with open(chat_history_file, 'w') as f:
+        json.dump(data, f, indent=4, separators=(',', ': '))
 
 
 def clear_user_chat_history(username):
@@ -46,12 +62,18 @@ def add_user_chat_history(username, user_message, bot_message):
     chat_data.append({"role": "assistant", "content": bot_message})
     with open(chat_history_file, 'w') as f:
         json.dump(chat_data, f, ensure_ascii=False, indent=4)
+# 设置代理时取消该段注释
 
-
-proxies = {
-    'http': 'http://proxy.example.com:8080',
-    'https': 'http://proxy.example.com:8080',
-}
+# proxies = {
+#     'http': '127.0.0.1:8080',
+#     'https': '127.0.0.1:8080',
+# }
+# proxy = {
+#     'http': '127.0.0.1:10809',
+#     'https': '127.0.0.1:10809',
+# }
+#
+# response = requests.get('https://api.openai.com', proxies=proxy)
 
 
 def chat_with_gpt(user_message, username):
@@ -71,12 +93,11 @@ def chat_with_gpt(user_message, username):
         chat_history.append({"role": "user", "content": user_message})
 
         response = openai.ChatCompletion.create(
-            # proxies=proxies,
             messages=chat_history,
             model="gpt-3.5-turbo-0301",
             max_tokens=2048,
             temperature=0.7,
-            n=1
+            n=1,
         )
         # 将助手的回复添加到对话历史中
         bot_message = response["choices"][0]["message"]["content"].strip()
@@ -89,8 +110,12 @@ def chat_with_gpt(user_message, username):
         return bot_message
     except Exception as e:
         # 返回错误信息
-        error_message = f"请截图反应给网站管理员  发生错误: {str(e)} "
-        return error_message
+        if "This model's maximum context length is 4097 tokens" in str(e):
+            remove_json_items(username, 2)
+            chat_with_gpt(user_message, username)
+        else:
+            error_message = f"请截图反应给网站管理员  发生错误: {str(e)} "
+            return error_message
 
 
 # 连接到 SQLite3 数据库
@@ -163,7 +188,6 @@ def login():
 
         session["username"] = username
         session["conversation_history"] = []
-
 
         # 创建用户专属的聊天记录文件夹
         user_chat_history_folder = os.path.join("chat", username)
@@ -288,12 +312,12 @@ def chat():
     if times > 0:
         chat_count += 1
         #  修改聊天上限次数
-        if chat_count == 30:
-            chat_count = 0
-            clear_user_chat_history(username)
-            bot_message = "该对话 已经达到上限 已帮您清除聊天记录 开启新的对话"
-        else:
-            bot_message = chat_with_gpt(user_message, username)
+        # if chat_count == 30:
+        #     chat_count = 0
+        #     clear_user_chat_history(username)
+        #     bot_message = "该对话 已经达到上限 已帮您清除聊天记录 开启新的对话"
+        # else:
+        bot_message = chat_with_gpt(user_message, username)
 
         # 更新剩余次数 聊天次数
         cursor.execute("UPDATE accounts SET count = ? WHERE username = ?", (times - 1, username))
@@ -304,7 +328,8 @@ def chat():
         return jsonify({"message": bot_message, "times": times - 1, "chat_count": chat_count})
     else:
         conn.close()
-        return jsonify({"message": "次数不足 请及时充值", "times": times, "chat_count": chat_count})
+        return jsonify({"message": "次数不足，请点击<a href='http://example.com'>这里</a>充值", "times": times,
+                        "chat_count": chat_count})
 
 
 if __name__ == "__main__":

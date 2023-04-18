@@ -2,9 +2,9 @@
 <html>
 <head>
     <title>电院ChatGPT</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
-
         var waitingForBotResponse = false;
 
         function requestChat(userMessage) {
@@ -20,9 +20,9 @@
                     var response = JSON.parse(xhr.responseText);
                     if (response.times >= 0) {
                         var botMessage = response.message;
-                        var chat_count = response.chat_count;
+                        var chat_count = response.times;
                         var chatCountElement = document.getElementById("chat-count"); // 获取<div>元素的引用
-                        chatCountElement.innerHTML = "当前对话次数：" + chat_count + "/30";
+                        chatCountElement.innerHTML = "剩余对话次数：" + chat_count + "";
                         appendMessage("bot", botMessage);
                         scrollToBottom();
                         waitingForBotResponse = false;
@@ -108,90 +108,122 @@
                 sendMessage();
             }
         });
+
     </script>
 <style>
-    body {
-        background-image: linear-gradient(to right, #ffdb58, #ffbb7c, #ffa799, #ff9aa2);
-    }
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-    }
-    h1 {
-        font-size: 36px;
-        margin-bottom: 10px;
-        color: rgba(239, 143, 75, 0.98); /* 修改标题颜色为暖色调 */
-        text-align: center; /* 居中对齐 */
-    }
-    #chatbox {
-        height: 400px;
-        overflow-y: scroll;
-        background-color: #fbe6d3;
-        padding: 10px;
-        margin-bottom: 10px;
-        border: 1px solid #e59b78;
-        border-radius: 5px;
-    }
-    .message {
-        margin-bottom: 10px;
-    }
-    .user {
-        float: right;
-        color: #fff;
-        clear: both;
-        background-color: #e59b78;
-        padding: 5px;
-        border-radius: 5px;
-        display: flex; /* 使用flex布局，使上下排列 */
-        align-items: flex-start; /* 顶部对齐 */
-        margin-bottom: 5px;
-        word-break: break-word; /* 添加自动换行 */
-    }
-    .bot {
-        float: left;
-        color: #fff;
-        /*使容器 占据一行 */
-        clear: both;
-        background-color: #ff9aa2;
-        padding: 5px;
-        border-radius: 5px;
-        display: flex; /* 使用flex布局，使上下排列 */
-        align-items: flex-start; /* 顶部对齐 */
-        margin-bottom: 5px;
-        word-break: break-word; /* 添加自动换行 */
-    }
-    .user .content, .bot .content {
-        flex: 1; /* 使用flex布局，使内容部分自动扩展 */
-        max-width: calc(100% - 40px); /* 最大宽度为 chatbox 宽度减去 padding */
-    }
-    #userMessage {
-        width: calc(100% - 80px);
-        padding: 5px;
-        margin-right: 10px;
-        border: 1px solid #e59b78;
-        border-radius: 5px;
-    }
-    #sendMessageBtn {
-        padding: 5px 10px;
-        background-color: #ea5c29; /* 修改发送按钮背景颜色为暖色调 */
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold; /* 加粗字体 */
-    }
-    #sendMessageBtn:disabled {
-        background-color: #ccc;
-        cursor: not-allowed;
-    }
+        body {
+            background-image: linear-gradient(to right, #ffdb58, #ffbb7c, #ffa799, #ff9aa2);
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            color: rgba(239, 143, 75, 0.98); /* 修改标题颜色为暖色调 */
+            text-align: center; /* 居中对齐 */
+        }
+
+        #chatbox {
+            height: 400px;
+            width: 100%;
+            overflow-y: scroll;
+            background-color: #fbe6d3;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #e59b78;
+            border-radius: 5px;
+        }
+
+
+        .message {
+            margin-bottom: 10px;
+        }
+
+        .user {
+            float: right;
+            color: #fff;
+            clear: both;
+            background-color: #e59b78;
+            padding: 5px;
+            border-radius: 5px;
+            display: flex;
+            align-items: flex-start; /* 顶部对齐 */
+            margin-bottom: 5px;
+            word-break: break-word; /* 添加自动换行 */
+
+        }
+
+        .bot {
+            float: left;
+            color: #fff;
+            /*使容器 占据一行 */
+            clear: both;
+            background-color: #ff9aa2;
+            padding: 5px;
+            border-radius: 5px;
+            display: flex; /* 使用flex布局，使上下排列 */
+            align-items: flex-start; /* 顶部对齐 */
+            margin-bottom: 5px;
+            word-break: break-word; /* 添加自动换行 */
+            justify-content: space-between;
+        }
+
+        .user .content, .bot .content {
+            flex: 1;
+            max-width: calc(100% - 40px);
+        }
+
+        .bot-left {
+          margin-right: auto;
+        }
+
+        .user-right {
+          margin-left: auto;
+        }
+        #userMessage {
+            width: calc(100% - 80px);
+            padding: 5px;
+            margin-right: 10px;
+            border: 1px solid #e59b78;
+            border-radius: 5px;
+        }
+
+        #sendMessageBtn {
+            padding: 5px 10px;
+            background-color: #ea5c29;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold; /* 加粗字体 */
+        }
+
+        #sendMessageBtn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        @media screen and (max-width: 768px) {
+        #chatbox {
+            height: 430px;
+            width: auto;
+        }
+}
 </style>
 </head>
 <body>
     <h1>电院ChatGpt</h1>
     <div id="chatbox"></div>
     <div>
-        <div id="chat-count" class="bot">当前对话次数</div>
+        <div style="display: flex;">
+          <div id="chat-count-wrapper" class="bot" >
+            <div id="chat-count">剩余对话次数</div>
+          </div>
+        </div>
         <input type="text" id="userMessage" placeholder="输入您的信息..." />
         <button id="sendMessageBtn" onclick="sendMessage()">发送</button>
     </div>
